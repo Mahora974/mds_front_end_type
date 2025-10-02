@@ -1,5 +1,43 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true }
+  devtools: { enabled: true },
+  modules: ['@vite-pwa/nuxt'],
+  pwa: {
+    manifest: {
+      name: 'MDS_PWA',
+      short_name: 'PWA',
+      description: 'Tp du cours dev front end typé de mds',
+      theme_color: '#ffffff',
+      background_color: '#ffffff',
+      lang: 'fr',
+      start_url: '/',
+      display: 'standalone',
+      icons: [
+        {
+          src: 'icons/icon144.png',
+          sizes: '144x144',
+          type: 'image/png'
+        },
+      ],
+      screenshots: [
+        {
+          src:"screenshots/screenshot1452x1050.png",
+          sizes:"1452x1050",
+          form_factor:"wide"
+        },
+        {
+          src:"screenshots/screenshot1452x1050.png",
+          sizes:"1452x1050"
+        }
+      ]
+    },
+    workbox: {
+      navigateFallback: '/',
+    },
+    devOptions: {
+      enabled: true,
+      type: "module", 
+    }
+  }
 })

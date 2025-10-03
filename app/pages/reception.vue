@@ -1,7 +1,4 @@
 <script setup >
-import Room from './room.vue';
-
-    
     const isCameraOpen = ref(false)
     const isPhotoTaken = ref(false); 
     const camera = ref(null)

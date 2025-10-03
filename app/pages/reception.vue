@@ -1,4 +1,7 @@
-<script setup >    
+<script setup >
+import Room from './room.vue';
+
+    
     const isCameraOpen = ref(false)
     const isPhotoTaken = ref(false); 
     const camera = ref(null)
@@ -8,7 +11,7 @@
         audio: false,
         video: {
             facingMode: {
-            exact: "environment"
+                exact: "environment"
             }
         }
     });
@@ -57,49 +60,77 @@
 
         download.setAttribute("href", canvas);
     }
+const pseudo = ref(localStorage.getItem('pseudo'))
+const image =  ref(localStorage.getItem('image'))
+const room =  ref('')
+
+function saveTakedImage() {
+    const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
+            .replace("image/jpeg", "image/octet-stream");
+    image.value = canvas;
+    
+}
+
+
+    watch(pseudo, async (newPseudo, oldPseudo) => {
+        localStorage.setItem('pseudo', newPseudo)
+    })
+    
+    watch(image, async (newImage, oldImage) => {
+        localStorage.setItem('image', newImage)
+    })
 </script>
 
 <template>
-  <div>
-    <AppTitle title="Reception"/>
-    <h2 class="mx-2">Se connecter</h2>
-    <form class="w-[100%] mx-3">
-        <section class="border-2 text-center">
-            <div class="camera-button">
-                <button type="button" class="button is-rounded" :class="{ 'is-primary' : !isCameraOpen, 'is-danger' : isCameraOpen}" @click="toggleCamera">
-                    <span v-if="!isCameraOpen">Open Camera</span>
-                    <span v-else>Close Camera</span>
-                </button>
+    <div>
+        <AppTitle title="Reception"/>
+        <h2 class="mx-2">Se connecter</h2>
+        <form class="w-[95%] mx-3">
+            <div class="grid grid-cols-2">
+                <section>
+                    <p>Photo de profil acctuelle</p>
+                    <img :src="image" width="144" height="144"/>
+
+                </section>
+                <section class="border-2 text-center">
+                    <div class="camera-button">
+                        <button type="button" class="button is-rounded" :class="{ 'is-primary' : !isCameraOpen, 'is-danger' : isCameraOpen}" @click="toggleCamera">
+                            <span v-if="!isCameraOpen">Open Camera</span>
+                            <span v-else>Close Camera</span>
+                        </button>
+                    </div>
+                    <div v-if="isCameraOpen" class="flex justify-center">
+                        <video v-show="!isPhotoTaken" ref="camera" :width="450" :height="337.5" autoplay></video>
+                        <canvas v-show="isPhotoTaken" id="photoTaken" ref="canvas" :width="450" :height="337.5"></canvas>
+                    </div>
+                    <button type="button" class="border-2 rounded-full" @click="takePhoto">
+                        <Icon name="ic:baseline-camera-alt" class="px-4" />
+                    </button>
+                    <div v-if="isPhotoTaken && isCameraOpen" class="camera-download">
+                        <a id="downloadPhoto" download="my-photo.jpg" class="button" role="button" @click="downloadImage">
+                            Download
+                        </a>
+                        <a role="button" @click="saveTakedImage">
+                            Choisir en tant que photo de profil
+                        </a>
+                    </div>
+                </section>
             </div>
-            <div v-if="isCameraOpen" class="flex justify-center">
-                <video v-show="!isPhotoTaken" ref="camera" :width="450" :height="337.5" autoplay></video>
-                <canvas v-show="isPhotoTaken" id="photoTaken" ref="canvas" :width="450" :height="337.5"></canvas>
-            </div>
-            <button type="button" class="border-2 rounded-full" @click="takePhoto">
-                <Icon name="ic:baseline-camera-alt" class="px-4" />
-            </button>
-            <div v-if="isPhotoTaken && isCameraOpen" class="camera-download">
-                <a id="downloadPhoto" download="my-photo.jpg" class="button" role="button" @click="downloadImage">
-                    Download
-                </a>
-            </div>
-        </section>
-        <div class="inputs">
             <div class="flex flex-col">
                 <label>Pseudo</label>
-                <input type="text" />
+                <input type="text"  v-model="pseudo" />
             </div>
             <div class="flex flex-col">
-                <label>Salle</label>
-                <select>
-                    <option>Room 1</option>
-                    <option>Room 2</option>
+                <label>Room</label>
+                <select type="text"  v-model="Room" >
+                    <option>Créer une room</option>
+                    <option>Room1</option>
+                    <option>Room2</option>
                 </select>
             </div>
-        </div>
-        <button>Se connecter</button>
-    </form>
-  </div>
+            <button>Se connecter</button>
+        </form>
+    </div>
 </template>
 
 <style scoped>
@@ -107,14 +138,7 @@ h2 {
   font-size: 18px;
   font-weight: 500;
 }
-.inputs {
-    margin: 1% 0;
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    row-gap: 5%;
-}
-.form-group input {
+input, select {
     border: 1px rgb(180, 180, 180) solid;
     border-radius: 3em;
     font-size: 14px;

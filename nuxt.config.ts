@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@vite-pwa/nuxt'],
+  ssr: true,
   pwa: {
     manifest: {
       name: 'MDS_PWA',

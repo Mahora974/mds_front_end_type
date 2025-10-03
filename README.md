@@ -1,3 +1,7 @@
+# Application PWA de chat - Projet MDS
+
+Disponible en production et à l'installation [ici](https://mahora.grolleau.angers.mds-project.fr/).
+
 # Nuxt Minimal Starter
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.

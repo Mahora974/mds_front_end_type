@@ -2,8 +2,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@vite-pwa/nuxt'],
   ssr: true,
+  modules: ['@vite-pwa/nuxt', '@nuxtjs/tailwindcss', '@nuxt/icon'],
+  icon: {
+    mode: 'css',
+    cssLayer: 'base'
+  },
   pwa: {
     manifest: {
       name: 'MDS_PWA',
@@ -16,7 +20,7 @@ export default defineNuxtConfig({
       display: 'standalone',
       icons: [
         {
-          src: 'icons/icon144.png',
+          src: 'icons/icon144-dev.png',
           sizes: '144x144',
           type: 'image/png'
         },

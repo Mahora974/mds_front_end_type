@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     cssLayer: 'base'
   },
   pwa: {
+    registerType: 'autoUpdate',
     manifest: {
       name: 'MDS_PWA',
       short_name: 'PWA',

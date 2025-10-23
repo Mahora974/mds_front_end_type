@@ -1,6 +1,6 @@
-<script setup >
-    import Room from './room.vue';
-
+<script setup lang="ts">
+    import type { UseWebNotificationOptions } from '@vueuse/core'
+    import { useWebNotification } from '@vueuse/core'
     const isCameraOpen = ref(false)
     const isPhotoTaken = ref(false); 
     const camera = ref(null)
@@ -8,7 +8,21 @@
     const pseudo = ref(localStorage.getItem('pseudo'))
     const image =  ref(localStorage.getItem('image'))
     const room =  ref('')
-    let tracks = [];
+    const options: UseWebNotificationOptions = {
+        title: 'Votre image a été enregistrée dans la galerie ! ',
+        dir: 'auto',
+        lang: 'fr',
+        renotify: true,
+        tag: 'test',
+    }
+
+    const {
+        isSupported,
+        show,
+    } = useWebNotification(options)
+
+    
+    let tracks:MediaStreamTrack[] = [];
     const constraints = (window.constraints = {
         audio: false,
         video: {
@@ -34,7 +48,7 @@
         });
     }
 
-    function stopCameraStream(tracks) {
+    function stopCameraStream(tracks:MediaStreamTrack[]) {
         tracks.forEach(track => track.stop())
         
     }
@@ -65,18 +79,19 @@
     }
 
     function saveTakedImage() {
-        const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
+        const canvas:string = document.getElementById("photoTaken").toDataURL("image/jpeg")
                 .replace("image/jpeg", "image/octet-stream");
         image.value = canvas;
         saveImage(canvas);
         
     }
 
-    function saveImage(image) {
+    function saveImage(image:string) {
         let gallery = localStorage.getItem('gallery');
         let parsedGallery = JSON.parse(gallery)??[];
         parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
         localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
+        show()
     }
 
     watch(pseudo, async (newPseudo, oldPseudo) => {
@@ -107,8 +122,8 @@
                         </button>
                     </div>
                     <div v-if="isCameraOpen" class="flex justify-center">
-                        <video v-show="!isPhotoTaken" ref="camera" :width="450" :height="337.5" autoplay></video>
-                        <canvas v-show="isPhotoTaken" id="photoTaken" ref="canvas" :width="450" :height="337.5"></canvas>
+                        <video v-show="!isPhotoTaken" ref="camera" autoplay></video>
+                        <canvas v-show="isPhotoTaken" id="photoTaken" ref="canvas"></canvas>
                     </div>
                     <button type="button" class="border-2 rounded-full" @click="takePhoto">
                         <Icon name="ic:baseline-camera-alt" class="px-4" />
@@ -129,7 +144,7 @@
             </div>
             <div class="flex flex-col">
                 <label>Room</label>
-                <select type="text"  v-model="Room" >
+                <select type="text"  v-model="room" >
                     <option>Créer une room</option>
                     <option>Room1</option>
                     <option>Room2</option>

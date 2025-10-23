@@ -1,13 +1,13 @@
-<script setup>
+<script setup lang="ts">
     const gallery = ref(JSON.parse(localStorage.getItem('gallery')));
 
-    function downloadImage(index, image) {
+    function downloadImage(index:number, image:string) {
         const download = document.getElementById("download_"+index);
         download.setAttribute("href", image);
         console.log(download)
     }
 
-    function deleteImage(index) {
+    function deleteImage(index:number) {
         gallery.value.splice(index,1);
         localStorage.setItem('gallery', JSON.stringify(gallery.value));
 

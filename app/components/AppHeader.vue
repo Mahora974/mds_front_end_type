@@ -1,9 +1,9 @@
 <template>
   <nav >
     <ul class="flex justify-around">
-      <li><NuxtLink to="/">Home</NuxtLink></li>
-      <li><NuxtLink to="/reception">Reception</NuxtLink></li>
-      <li><NuxtLink to="/gallery">Gallery</NuxtLink></li>
+      <li><NuxtLink to="/">Accueil</NuxtLink></li>
+      <li><NuxtLink to="/reception">Réception</NuxtLink></li>
+      <li><NuxtLink to="/gallery">Gallerie</NuxtLink></li>
     </ul>
   </nav>
 </template>

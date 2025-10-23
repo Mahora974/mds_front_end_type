@@ -7,7 +7,8 @@
     const canvas = ref(null)
     const pseudo = ref(localStorage.getItem('pseudo'))
     const image =  ref(localStorage.getItem('image'))
-    const room =  ref('')
+    const selectedRoom =  ref('')
+    const rooms = ref([{'name':'room1'}]);
     const options: UseWebNotificationOptions = {
         title: 'Votre image a été enregistrée dans la galerie ! ',
         dir: 'auto',
@@ -101,13 +102,20 @@
     watch(image, async (newImage, oldImage) => {
         localStorage.setItem('image', newImage)
     })
+
+    
+    function login(){
+        if (pseudo && selectedRoom) {
+            navigateTo(`/rooms/${selectedRoom.value}`);
+        }
+    }
 </script>
 
 <template>
     <div>
         <AppTitle title="Reception"/>
         <h2 class="mx-2">Se connecter</h2>
-        <form class="w-[95%] mx-3">
+        <form class="w-[95%] mx-3" v-on:submit.prevent="login">
             <div class="grid grid-cols-2">
                 <section>
                     <p>Photo de profil acctuelle</p>
@@ -140,14 +148,14 @@
             </div>
             <div class="flex flex-col">
                 <label>Pseudo</label>
-                <input type="text"  v-model="pseudo" />
+                <input type="text"  v-model="pseudo" required />
             </div>
             <div class="flex flex-col">
                 <label>Room</label>
-                <select type="text"  v-model="room" >
+                <select type="text"  v-model="selectedRoom" required >
                     <option>Créer une room</option>
-                    <option>Room1</option>
-                    <option>Room2</option>
+                    <option>general</option>
+                    <option v-for="room in rooms">{{room.name}}</option>
                 </select>
             </div>
             <button>Se connecter</button>

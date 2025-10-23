@@ -1,8 +1,13 @@
 <script setup >
+    import Room from './room.vue';
+
     const isCameraOpen = ref(false)
     const isPhotoTaken = ref(false); 
     const camera = ref(null)
     const canvas = ref(null)
+    const pseudo = ref(localStorage.getItem('pseudo'))
+    const image =  ref(localStorage.getItem('image'))
+    const room =  ref('')
     let tracks = [];
     const constraints = (window.constraints = {
         audio: false,
@@ -12,13 +17,12 @@
             }
         }
     });
+
     function createCameraElement() {
         const constraints = (window.constraints = {
             audio: false,
             video: true
         });
-
-
         navigator.mediaDevices
             .getUserMedia(constraints)
             .then(stream => {
@@ -50,24 +54,30 @@
         const context = canvas.value.getContext('2d');
         context.drawImage(camera.value, 0, 0, 450, 337.5);
     }
+
     function downloadImage() {
         const download = document.getElementById("downloadPhoto");
         const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
             .replace("image/jpeg", "image/octet-stream");
-
         download.setAttribute("href", canvas);
+        console.log(download)
+        saveImage(canvas);
     }
-const pseudo = ref(localStorage.getItem('pseudo'))
-const image =  ref(localStorage.getItem('image'))
-const room =  ref('')
 
-function saveTakedImage() {
-    const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
-            .replace("image/jpeg", "image/octet-stream");
-    image.value = canvas;
-    
-}
+    function saveTakedImage() {
+        const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
+                .replace("image/jpeg", "image/octet-stream");
+        image.value = canvas;
+        saveImage(canvas);
+        
+    }
 
+    function saveImage(image) {
+        let gallery = localStorage.getItem('gallery');
+        let parsedGallery = JSON.parse(gallery)??[];
+        parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
+        localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
+    }
 
     watch(pseudo, async (newPseudo, oldPseudo) => {
         localStorage.setItem('pseudo', newPseudo)
@@ -105,7 +115,7 @@ function saveTakedImage() {
                     </button>
                     <div v-if="isPhotoTaken && isCameraOpen" class="camera-download">
                         <a id="downloadPhoto" download="my-photo.jpg" class="button" role="button" @click="downloadImage">
-                            Download
+                            Télécharger
                         </a>
                         <a role="button" @click="saveTakedImage">
                             Choisir en tant que photo de profil

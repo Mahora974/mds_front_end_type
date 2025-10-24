@@ -5,8 +5,8 @@
     const isPhotoTaken = ref(false); 
     const camera = ref(null)
     const canvas = ref(null)
-    const pseudo = ref(import.meta.client?localStorage.getItem('pseudo'):null)
-    const image =  ref(import.meta.client?localStorage.getItem('image'):null)
+    const pseudo = ref(localStorage.getItem('pseudo'))
+    const image =  ref(localStorage.getItem('image'))
     const selectedRoom =  ref('')
     const rooms = ref([
         {name:'Général', url:'general'},
@@ -33,10 +33,7 @@
         {name:'L\'Éplorée', url:'grey'},
         {name:'Et ils vécurent heureux', url:'hea'},
     ]);
-    
-    if (import.meta.client) {
-        localStorage.setItem('rooms', JSON.stringify(rooms.value));
-    }
+    localStorage.setItem('rooms', JSON.stringify(rooms.value));
     const options: UseWebNotificationOptions = {
         title: 'Votre image a été enregistrée dans la galerie ! ',
         dir: 'auto',
@@ -116,32 +113,24 @@
     }
 
     function saveImage(image:string) {
-        let gallery = import.meta.client?localStorage.getItem('gallery'):null;
+        let gallery = localStorage.getItem('gallery');
         let parsedGallery = JSON.parse(gallery)??[];
         parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
-        if (import.meta.client) {
-            localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
-        }
+        localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
         show()
     }
 
     watch(pseudo, async (newPseudo, oldPseudo) => {
-        if (import.meta.client) {
-            localStorage.setItem('pseudo', newPseudo)
-        }
+        localStorage.setItem('pseudo', newPseudo)
     })
     
     watch(image, async (newImage, oldImage) => {
-        if (import.meta.client) {
-            localStorage.setItem('image', newImage)
-        }
+        localStorage.setItem('image', newImage)
     })
 
     
     function login(){
-        if (import.meta.client) {
-            localStorage.setItem('room', selectedRoom.value);
-        }
+        localStorage.setItem('room', selectedRoom.value);
         if (pseudo && selectedRoom) {
             navigateTo(`/rooms/${selectedRoom.value}`);
         }

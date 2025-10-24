@@ -7,13 +7,12 @@
 
     const route = useRoute()
     const roomUrl = ref(route.params.room)
-    const localRoom = import.meta.client?localStorage.getItem('room'):null;
-    if (roomUrl.value !== localRoom) {
-        roomUrl.value = localRoom;
+    if (roomUrl.value !== localStorage.getItem('room')) {
+        roomUrl.value = localStorage.getItem('room');
     }
-    const rooms = JSON.parse(import.meta.client?localStorage.getItem('rooms'):null);
-    const roomName = rooms.find((room) => room.url == roomUrl);
-    const pseudo = ref(import.meta.client?localStorage.getItem('pseudo'):null)
+    const rooms = JSON.parse(localStorage.getItem('rooms'));
+    const roomName = rooms.find((room) => room.url == roomUrl.value);
+    const pseudo = ref(localStorage.getItem('pseudo'))
     const title = `Bienvenue dans la room "${roomName.value}", ${pseudo.value} !`;
     const messages = ref([]);
     const typedMessage = ref('');
@@ -34,9 +33,7 @@
     socket.on("chat-msg", (msg) => {
         msg.dateEmis = new Date(msg.dateEmis);
         messages.value.push(msg);
-        if (import.meta.client) {
-            localStorage.setItem(`log-message-${roomUrl.value}`,JSON.stringify(messages.value));
-        }
+        localStorage.setItem(`log-message-${roomUrl.value}`,JSON.stringify(messages.value));
     });
 
     function send() {

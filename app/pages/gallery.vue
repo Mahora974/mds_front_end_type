@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    const gallery = ref(JSON.parse(import.meta.client?localStorage.getItem('gallery'):null));
+    const gallery = ref(JSON.parse(localStorage.getItem('gallery')));
 
     function downloadImage(index:number, image:string) {
         const download = document.getElementById("download_"+index);
@@ -9,9 +9,7 @@
 
     function deleteImage(index:number) {
         gallery.value.splice(index,1);
-        if (import.meta.client) {
-            localStorage.setItem('gallery', JSON.stringify(gallery.value));
-        }
+        localStorage.setItem('gallery', JSON.stringify(gallery.value));
 
     }
 </script>

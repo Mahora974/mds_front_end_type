@@ -7,7 +7,33 @@
     const canvas = ref(null)
     const pseudo = ref(localStorage.getItem('pseudo'))
     const image =  ref(localStorage.getItem('image'))
-    const room =  ref('')
+    const selectedRoom =  ref('')
+    const rooms = ref([
+        {name:'Général', url:'general'},
+        {name:'L\'Adversaire', url:'advesary'},
+        {name:'La Tour', url:'tower'},
+        {name:'Le Spectre', url:'specter'},
+        {name:'Le Cauchemar', url:'nightmare'},
+        {name:'Le Razoir', url:'razor'},
+        {name:'La Bête', url:'beast'},
+        {name:'La Sorcière', url:'witch'},
+        {name:'L\'Inconnue', url:'stranger'},
+        {name:'La prisonnière', url:'prisoner'},
+        {name:'La demoiselle', url:'dasmel'},
+        {name:'Le Chat de l\'aiguille', url:'eotn'},
+        {name:'La Furie', url:'fury'},
+        {name:'L\'Apotéose', url:'apoteosis'},
+        {name:'La Princess et le Dragon', url:'patd'},
+        {name:'La Revenante', url:'wraith'},
+        {name:'Le Moment de clarité', url:'moc'},
+        {name:'La Tanière', url:'den'},
+        {name:'La Nature sauvage', url:'wild'},
+        {name:'L\'Épine', url:'thorn'},
+        {name:'La Cage', url:'cage'},
+        {name:'L\'Éplorée', url:'grey'},
+        {name:'Et ils vécurent heureux', url:'hea'},
+    ]);
+    localStorage.setItem('rooms', JSON.stringify(rooms.value));
     const options: UseWebNotificationOptions = {
         title: 'Votre image a été enregistrée dans la galerie ! ',
         dir: 'auto',
@@ -101,13 +127,21 @@
     watch(image, async (newImage, oldImage) => {
         localStorage.setItem('image', newImage)
     })
+
+    
+    function login(){
+        localStorage.setItem('room', selectedRoom.value);
+        if (pseudo && selectedRoom) {
+            navigateTo(`/rooms/${selectedRoom.value}`);
+        }
+    }
 </script>
 
 <template>
     <div>
         <AppTitle title="Reception"/>
         <h2 class="mx-2">Se connecter</h2>
-        <form class="w-[95%] mx-3">
+        <form class="w-[95%] mx-3" v-on:submit.prevent="login">
             <div class="grid grid-cols-2">
                 <section>
                     <p>Photo de profil acctuelle</p>
@@ -140,14 +174,12 @@
             </div>
             <div class="flex flex-col">
                 <label>Pseudo</label>
-                <input type="text"  v-model="pseudo" />
+                <input type="text"  v-model="pseudo" required />
             </div>
             <div class="flex flex-col">
                 <label>Room</label>
-                <select type="text"  v-model="room" >
-                    <option>Créer une room</option>
-                    <option>Room1</option>
-                    <option>Room2</option>
+                <select type="text"  v-model="selectedRoom" required >
+                    <option v-for="room in rooms" :value="room.url">{{room.name}}</option>
                 </select>
             </div>
             <button>Se connecter</button>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
     import type { UseWebNotificationOptions } from '@vueuse/core'
     import { useWebNotification } from '@vueuse/core'
+    import { useOnline } from '@vueuse/core'
+
+    const online = useOnline()
     const isCameraOpen = ref(false)
     const isPhotoTaken = ref(false); 
     const camera = ref(null)
@@ -176,13 +179,13 @@
                 <label>Pseudo</label>
                 <input type="text"  v-model="pseudo" required />
             </div>
-            <div class="flex flex-col">
+            <div class="flex flex-col" v-if="online">
                 <label>Room</label>
                 <select type="text"  v-model="selectedRoom" required >
                     <option v-for="room in rooms" :value="room.url">{{room.name}}</option>
                 </select>
             </div>
-            <button>Se connecter</button>
+            <button type="submit" v-if="online">Se connecter</button>
         </form>
     </div>
 </template>

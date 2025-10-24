@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useBattery } from '@vueuse/core'
 
-  const room = ref(localStorage.getItem('room'))
+  const room = ref(import.meta.client?localStorage.getItem('room'):null)
   const { charging, chargingTime, dischargingTime, level } = useBattery()
   const batteryIcon = ref('');
 

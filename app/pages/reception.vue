@@ -8,7 +8,32 @@
     const pseudo = ref(localStorage.getItem('pseudo'))
     const image =  ref(localStorage.getItem('image'))
     const selectedRoom =  ref('')
-    const rooms = ref([{'name':'room1'}]);
+    const rooms = ref([
+        {name:'Général', url:'general'},
+        {name:'L\'Adversaire', url:'advesary'},
+        {name:'La Tour', url:'tower'},
+        {name:'Le Spectre', url:'specter'},
+        {name:'Le Cauchemar', url:'nightmare'},
+        {name:'Le Razoir', url:'razor'},
+        {name:'La Bête', url:'beast'},
+        {name:'La Sorcière', url:'witch'},
+        {name:'L\'Inconnue', url:'stranger'},
+        {name:'La prisonnière', url:'prisoner'},
+        {name:'La demoiselle', url:'dasmel'},
+        {name:'Le Chat de l\'aiguille', url:'eotn'},
+        {name:'La Furie', url:'fury'},
+        {name:'L\'Apotéose', url:'apoteosis'},
+        {name:'La Princess et le Dragon', url:'patd'},
+        {name:'La Revenante', url:'wraith'},
+        {name:'Le Moment de clarité', url:'moc'},
+        {name:'La Tanière', url:'den'},
+        {name:'La Nature sauvage', url:'wild'},
+        {name:'L\'Épine', url:'thorn'},
+        {name:'La Cage', url:'cage'},
+        {name:'L\'Éplorée', url:'grey'},
+        {name:'Et ils vécurent heureux', url:'hea'},
+    ]);
+    localStorage.setItem('rooms', JSON.stringify(rooms.value));
     const options: UseWebNotificationOptions = {
         title: 'Votre image a été enregistrée dans la galerie ! ',
         dir: 'auto',
@@ -105,6 +130,7 @@
 
     
     function login(){
+        localStorage.setItem('room', selectedRoom.value);
         if (pseudo && selectedRoom) {
             navigateTo(`/rooms/${selectedRoom.value}`);
         }
@@ -153,9 +179,7 @@
             <div class="flex flex-col">
                 <label>Room</label>
                 <select type="text"  v-model="selectedRoom" required >
-                    <option>Créer une room</option>
-                    <option>general</option>
-                    <option v-for="room in rooms">{{room.name}}</option>
+                    <option v-for="room in rooms" :value="room.url">{{room.name}}</option>
                 </select>
             </div>
             <button>Se connecter</button>

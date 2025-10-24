@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { useBattery } from '@vueuse/core'
+  import { useBattery, useOnline } from '@vueuse/core'
 
+  const online = useOnline()
   const room = ref(import.meta.client?localStorage.getItem('room'):null)
   const { charging, chargingTime, dischargingTime, level } = useBattery()
   const batteryIcon = ref('');
@@ -26,9 +27,13 @@
   })
 </script>
 <template>
-  <div class="grid grid-cols-[12fr_1fr]">
+  <div class="grid grid-cols-[10fr_1fr]">
     <h1 class="text-center text-lg font-bold">Titre</h1>
-    <div><Icon :name="batteryIcon" class="px-4" />{{level * 100}} %</div>
+    <div>
+      <div class="flex" v-if="online"> <Icon name="ic:baseline-check-circle" class="text-green-900" /> En Ligne </div>
+      <div class="flex" v-else><Icon name="ic:outline-cancel" class="text-grey-50" />Hors Ligne</div>
+      <div><Icon :name="batteryIcon" class="px-4" />{{level * 100}} %</div>
+    </div>
   </div>
   <nav >
     <ul class="flex justify-around">

@@ -11,9 +11,9 @@
         roomUrl.value = localStorage.getItem('room');
     }
     const rooms = JSON.parse(localStorage.getItem('rooms'));
-    const roomName = rooms.find((room) => room.url == roomUrl.value);
+    const roomName = rooms.find((room:{name:string, url:string}) => room.url == roomUrl.value);
     const pseudo = ref(localStorage.getItem('pseudo'))
-    const title = `Bienvenue dans la room "${roomName.value}", ${pseudo.value} !`;
+    const title = `Bienvenue dans la room "${roomName.name}", ${pseudo.value} !`;
     const messages = ref([]);
     const typedMessage = ref('');
     

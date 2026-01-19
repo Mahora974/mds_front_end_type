@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { io } from "socket.io-client";
-    import { useBattery, useOnline, useWebNotification, type UseWebNotificationOptions } from '@vueuse/core'
+    import { useBattery, useOnline, useVibrate, useWebNotification, type UseWebNotificationOptions } from '@vueuse/core'
 
     class Message {
         categorie: string;
@@ -42,6 +42,7 @@
         isSupported,
         show,
     } = useWebNotification(options)
+    const { vibrate, stop } = useVibrate({ pattern: [300, 100, 300] })
 
 
     const route = useRoute()
@@ -166,6 +167,7 @@
             localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
         }
         show()
+        vibrate()
     }
 
     async function sendPicture() {
@@ -195,6 +197,7 @@
                 <div><em>{{message.dateEmis.toLocaleString()}}</em></div>
             </div>
         </div>
+        <p>Notification disponible : {{isSupported}}</p>
         <div class="fixed bottom-0 inset-x-0" v-if="online">
             <div class="border-2 w-40 h-40"  v-if="isCameraOpen">
                 <div class="border-4 border-b-8 bg-white border-white w-full h-full text-center p-2">

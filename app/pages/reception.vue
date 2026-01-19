@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import type { UseWebNotificationOptions } from '@vueuse/core'
-    import { useWebNotification } from '@vueuse/core'
+    import { useWebNotification, useVibrate } from '@vueuse/core'
     import { useOnline } from '@vueuse/core'
 
     const online = useOnline()
@@ -54,11 +54,8 @@
         tag: 'test',
     }
 
-    const {
-        isSupported,
-        show,
-    } = useWebNotification(options)
-
+    const {isSupported, show,} = useWebNotification(options)
+    const { vibrate, stop } = useVibrate({ pattern: [300, 100, 300] })
     
     let tracks:MediaStreamTrack[] = [];
     const constraints = (window.constraints = {
@@ -129,6 +126,7 @@
         parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
         localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
         show()
+        vibrate()
     }
 
     watch(pseudo, async (newPseudo, oldPseudo) => {

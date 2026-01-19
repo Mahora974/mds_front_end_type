@@ -38,11 +38,13 @@
         tag: 'test',
     }
 
-    const {
-        isSupported,
-        show,
-    } = useWebNotification(options)
-    const { vibrate, stop } = useVibrate({ pattern: [300, 100, 300] })
+    const {show,ensurePermissions} = useWebNotification(options)
+    const { vibrate, isSupported } = useVibrate({ pattern: [300, 100, 300] })
+    const notify = async () => {
+        if (await ensurePermissions())
+        show()
+    vibrate
+    }
 
 
     const route = useRoute()
@@ -166,7 +168,7 @@
             parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
             localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
         }
-        show()
+        notify()
         vibrate()
     }
 
@@ -197,7 +199,6 @@
                 <div><em>{{message.dateEmis.toLocaleString()}}</em></div>
             </div>
         </div>
-        <p>Notification disponible : {{isSupported}}</p>
         <div class="fixed bottom-0 inset-x-0" v-if="online">
             <div class="border-2 w-40 h-40"  v-if="isCameraOpen">
                 <div class="border-4 border-b-8 bg-white border-white w-full h-full text-center p-2">

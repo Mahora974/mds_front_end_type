@@ -11,32 +11,41 @@
     const pseudo = ref(localStorage.getItem('pseudo'))
     const image =  ref(localStorage.getItem('image'))
     const selectedRoom =  ref('')
-    const rooms = ref([
-        {name:'Général', url:'general'},
-        {name:'L\'Adversaire', url:'advesary'},
-        {name:'La Tour', url:'tower'},
-        {name:'Le Spectre', url:'specter'},
-        {name:'Le Cauchemar', url:'nightmare'},
-        {name:'Le Razoir', url:'razor'},
-        {name:'La Bête', url:'beast'},
-        {name:'La Sorcière', url:'witch'},
-        {name:'L\'Inconnue', url:'stranger'},
-        {name:'La prisonnière', url:'prisoner'},
-        {name:'La demoiselle', url:'dasmel'},
-        {name:'Le Chat de l\'aiguille', url:'eotn'},
-        {name:'La Furie', url:'fury'},
-        {name:'L\'Apotéose', url:'apoteosis'},
-        {name:'La Princess et le Dragon', url:'patd'},
-        {name:'La Revenante', url:'wraith'},
-        {name:'Le Moment de clarité', url:'moc'},
-        {name:'La Tanière', url:'den'},
-        {name:'La Nature sauvage', url:'wild'},
-        {name:'L\'Épine', url:'thorn'},
-        {name:'La Cage', url:'cage'},
-        {name:'L\'Éplorée', url:'grey'},
-        {name:'Et ils vécurent heureux', url:'hea'},
-    ]);
-    localStorage.setItem('rooms', JSON.stringify(rooms.value));
+    const rooms = ref([]);
+    const requestOptions = {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    };
+    const res = await fetch("https://api.tools.gavago.fr/socketio/api/rooms", requestOptions);
+    const response = await res.json();
+    const tempRooms = await response.data;
+    rooms.value = {
+        ...tempRooms, 
+        Général:{name:'Général', url:'general'},
+        'L\'Adversaire': {name:'L\'Adversaire', url:'advesary'},
+        'La Tour': {name:'La Tour', url:'tower'},
+        'Le Spectre': {name:'Le Spectre', url:'specter'},
+        'Le Cauchemar': {name:'Le Cauchemar', url:'nightmare'},
+        'Le Razoir': {name:'Le Razoir', url:'razor'},
+        'La Bête': {name:'La Bête', url:'beast'},
+        'La Sorcière': {name:'La Sorcière', url:'witch'},
+        'L\'Inconnue': {name:'L\'Inconnue', url:'stranger'},
+        'La Prisonnière': {name:'La prisonnière', url:'prisoner'},
+        'La Demoiselle': {name:'La demoiselle', url:'dasmel'},
+        'Le Chat de l\'aiguille': {name:'Le Chat de l\'aiguille', url:'eotn'},
+        'La Furie': {name:'La Furie', url:'fury'},
+        'L\'Apotéose': {name:'L\'Apotéose', url:'apoteosis'},
+        'La Princess et le Dragon': {name:'La Princess et le Dragon', url:'patd'},
+        'La Revenante': {name:'La Revenante', url:'wraith'},
+        'Le Moment de clarté': {name:'Le Moment de clarté', url:'moc'},
+        'La Tanière': {name:'La Tanière', url:'den'},
+        'La Nature sauvage': {name:'La Nature sauvage', url:'wild'},
+        'L\'Épine': {name:'L\'Épine', url:'thorn'},
+        'La Cage': {name:'La Cage', url:'cage'},
+        'L\'Éplorée': {name:'L\'Éplorée', url:'grey'},
+        'Et ils vécurent heureux': {name:'Et ils vécurent heureux', url:'hea'},
+    }
+
     const options: UseWebNotificationOptions = {
         title: 'Votre image a été enregistrée dans la galerie ! ',
         dir: 'auto',
@@ -103,7 +112,6 @@
         const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
             .replace("image/jpeg", "image/octet-stream");
         download.setAttribute("href", canvas);
-        console.log(download)
         saveImage(canvas);
     }
 
@@ -130,7 +138,6 @@
     watch(image, async (newImage, oldImage) => {
         localStorage.setItem('image', newImage)
     })
-
     
     function login(){
         localStorage.setItem('room', selectedRoom.value);
@@ -182,7 +189,7 @@
             <div class="flex flex-col" v-if="online">
                 <label>Room</label>
                 <select type="text"  v-model="selectedRoom" required >
-                    <option v-for="room in rooms" :value="room.url">{{room.name}}</option>
+                    <option v-for="(room, name) in rooms" :value="name">{{name}}</option>
                 </select>
             </div>
             <button type="submit" v-if="online">Se connecter</button>

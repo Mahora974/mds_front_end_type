@@ -197,7 +197,7 @@
         </div>
         <div class="fixed bottom-0 inset-x-0" v-if="online">
             <div class="border-2 w-40 h-40"  v-if="isCameraOpen">
-                <div class="border-4 border-b-8 bg-white border-white w-full h-full text-center">
+                <div class="border-4 border-b-8 bg-white border-white w-full h-full text-center p-2">
                     <div class="border-2 w-full">
                         <video v-show="!isPhotoTaken" ref="camera" class="w-full h-full" autoplay></video>
                         <canvas v-show="isPhotoTaken" id="photoTaken" class="w-30 h-28" ref="canvas"></canvas>

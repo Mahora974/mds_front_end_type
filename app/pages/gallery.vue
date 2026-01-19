@@ -4,7 +4,6 @@
     function downloadImage(index:number, image:string) {
         const download = document.getElementById("download_"+index);
         download.setAttribute("href", image);
-        console.log(download)
     }
 
     function deleteImage(index:number) {

@@ -2,48 +2,50 @@
     import type { UseWebNotificationOptions } from '@vueuse/core'
     import { useWebNotification, useVibrate } from '@vueuse/core'
     import { useOnline } from '@vueuse/core'
+    import type { ShallowRef } from 'vue'
 
-    const online = useOnline()
-    const isCameraOpen = ref(false)
-    const isPhotoTaken = ref(false); 
+    const online: Readonly<ShallowRef<boolean>> = useOnline()
+    const isCameraOpen: Ref<boolean> = ref(false)
+    const isPhotoTaken: Ref<boolean> = ref(false); 
     const camera = ref(null)
     const canvas = ref(null)
-    const pseudo = ref(localStorage.getItem('pseudo'))
-    const image =  ref(localStorage.getItem('image'))
+    const pseudo: Ref<string|null> = ref(localStorage.getItem('pseudo'))
+    const image: Ref<string|null> =  ref(localStorage.getItem('image'))
+
+    // Get rooms
     const selectedRoom =  ref('')
-    const rooms = ref([]);
+    const rooms:Ref<{[name: string]: Room}| null> = ref(null);
     const requestOptions = {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     };
-    const res = await fetch("https://api.tools.gavago.fr/socketio/api/rooms", requestOptions);
-    const response = await res.json();
-    const tempRooms = await response.data;
+    const res: Response = await fetch("https://api.tools.gavago.fr/socketio/api/rooms", requestOptions);
+    const response: { success: boolean, metadata: { time: string }, "data":{[roomName: string]: Room;}} = await res.json();
+    const tempRooms:{[name: string]: Room} = await response.data;
     rooms.value = {
         ...tempRooms, 
-        Général:{name:'Général', url:'general'},
-        'L\'Adversaire': {name:'L\'Adversaire', url:'advesary'},
-        'La Tour': {name:'La Tour', url:'tower'},
-        'Le Spectre': {name:'Le Spectre', url:'specter'},
-        'Le Cauchemar': {name:'Le Cauchemar', url:'nightmare'},
-        'Le Razoir': {name:'Le Razoir', url:'razor'},
-        'La Bête': {name:'La Bête', url:'beast'},
-        'La Sorcière': {name:'La Sorcière', url:'witch'},
-        'L\'Inconnue': {name:'L\'Inconnue', url:'stranger'},
-        'La Prisonnière': {name:'La prisonnière', url:'prisoner'},
-        'La Demoiselle': {name:'La demoiselle', url:'dasmel'},
-        'Le Chat de l\'aiguille': {name:'Le Chat de l\'aiguille', url:'eotn'},
-        'La Furie': {name:'La Furie', url:'fury'},
-        'L\'Apotéose': {name:'L\'Apotéose', url:'apoteosis'},
-        'La Princess et le Dragon': {name:'La Princess et le Dragon', url:'patd'},
-        'La Revenante': {name:'La Revenante', url:'wraith'},
-        'Le Moment de clarté': {name:'Le Moment de clarté', url:'moc'},
-        'La Tanière': {name:'La Tanière', url:'den'},
-        'La Nature sauvage': {name:'La Nature sauvage', url:'wild'},
-        'L\'Épine': {name:'L\'Épine', url:'thorn'},
-        'La Cage': {name:'La Cage', url:'cage'},
-        'L\'Éplorée': {name:'L\'Éplorée', url:'grey'},
-        'Et ils vécurent heureux': {name:'Et ils vécurent heureux', url:'hea'},
+        'L\'Adversaire': {clients: {}},
+        'La Tour': {clients: {}},
+        'Le Spectre': {clients: {}},
+        'Le Cauchemar': {clients: {}},
+        'Le Razoir': {clients: {}},
+        'La Bête': {clients: {}},
+        'La Sorcière': {clients: {}},
+        'L\'Inconnue': {clients: {}},
+        'La Prisonnière': {clients: {}},
+        'La Demoiselle': {clients: {}},
+        'Le Chat de l\'aiguille': {clients: {}},
+        'La Furie': {clients: {}},
+        'L\'Apotéose': {clients: {}},
+        'La Princess et le Dragon': {clients: {}},
+        'La Revenante': {clients: {}},
+        'Le Moment de clarté': {clients: {}},
+        'La Tanière': {clients: {}},
+        'La Nature sauvage': {clients: {}},
+        'L\'Épine': {clients: {}},
+        'La Cage': {clients: {}},
+        'L\'Éplorée': {clients: {}},
+        'Et ils vécurent heureux': {clients: {}},
     }
 
     const options: UseWebNotificationOptions = {
@@ -54,8 +56,8 @@
         tag: 'test',
     }
 
-    const {isSupported, show,} = useWebNotification(options)
-    const { vibrate, stop } = useVibrate({ pattern: [300, 100, 300] })
+    const { show } = useWebNotification(options)
+    const { vibrate } = useVibrate({ pattern: [300, 100, 300] })
     
     let tracks:MediaStreamTrack[] = [];
     const constraints = (window.constraints = {
@@ -105,36 +107,42 @@
     }
 
     function downloadImage() {
-        const download = document.getElementById("downloadPhoto");
-        const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
-            .replace("image/jpeg", "image/octet-stream");
-        download.setAttribute("href", canvas);
-        saveImage(canvas);
+        const download:HTMLElement|null = document.getElementById("downloadPhoto");
+        const photoTaken:HTMLCanvasElement|null = document.getElementById("photoTaken")
+        if (photoTaken) {
+            const canvas = photoTaken.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
+            if (download) download.setAttribute("href", canvas);
+            saveImage(canvas);
+        }
     }
 
     function saveTakedImage() {
-        const canvas:string = document.getElementById("photoTaken").toDataURL("image/jpeg")
-                .replace("image/jpeg", "image/octet-stream");
-        image.value = canvas;
-        saveImage(canvas);
-        
+        const photoTaken:HTMLCanvasElement = document.getElementById("photoTaken")
+        console.log(photoTaken)
+        if (photoTaken){
+            const canvas:string = photoTaken.toDataURL("image/jpeg")
+                    .replace("image/jpeg", "image/octet-stream");
+            image.value = canvas;
+            saveImage(canvas);
+        }
     }
 
     function saveImage(image:string) {
         let gallery = localStorage.getItem('gallery');
-        let parsedGallery = JSON.parse(gallery)??[];
+        let parsedGallery = [];
+        if (gallery) parsedGallery = JSON.parse(gallery)
         parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
         localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
         show()
         vibrate()
     }
 
-    watch(pseudo, async (newPseudo, oldPseudo) => {
-        localStorage.setItem('pseudo', newPseudo)
+    watch(pseudo, async (newPseudo) => {
+        if (newPseudo) localStorage.setItem('pseudo', newPseudo)
     })
     
-    watch(image, async (newImage, oldImage) => {
-        localStorage.setItem('image', newImage)
+    watch(image, async (newImage) => {
+        if (newImage) localStorage.setItem('image', newImage)
     })
     
     function login(){

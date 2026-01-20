@@ -1,15 +1,20 @@
 <script setup lang="ts">
-    const gallery = ref(JSON.parse(localStorage.getItem('gallery')));
+    const gallery:Ref<GalleryImage[] | null > = ref(null);
+    const savedGallery = localStorage.getItem('gallery');
+    if (savedGallery) {
+        gallery.value = JSON.parse(savedGallery)
+    }
 
     function downloadImage(index:number, image:string) {
         const download = document.getElementById("download_"+index);
-        download.setAttribute("href", image);
+        download?.setAttribute("href", image);
     }
 
     function deleteImage(index:number) {
-        gallery.value.splice(index,1);
-        localStorage.setItem('gallery', JSON.stringify(gallery.value));
-
+        if (gallery.value) {
+            gallery.value.splice(index,1);
+            localStorage.setItem('gallery', JSON.stringify(gallery.value));
+        }
     }
 </script>
 

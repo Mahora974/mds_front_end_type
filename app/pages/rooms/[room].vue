@@ -71,7 +71,15 @@
             })  
             const response = await res.json()
             const image = await response.data_image
-            const imageMessage = new Message("IMAGE", image, new Date(), "SERVER", msg.roomName, msg.serverId, msg.id_image); 
+            const imageMessage:Message = {
+                categorie: "IMAGE", 
+                content:image, 
+                dateEmis: new Date(), 
+                pseudo: "SERVER", 
+                roomName:msg.roomName, 
+                serverId:msg.serverId, 
+                id_image:msg.id_image
+            }; 
             messages.value.push(imageMessage);
         }
     });

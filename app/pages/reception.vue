@@ -94,8 +94,8 @@
         isCameraOpen.value = !isCameraOpen.value
         if(isCameraOpen.value) {
             createCameraElement();
-        } else {
             isPhotoTaken.value = false;
+        } else {
             stopCameraStream(tracks)
         }
     }
@@ -157,14 +157,15 @@
     <div>
         <AppTitle title="Réception"/>
         <h2 class="mx-2">Se connecter</h2>
-        <form class="w-[95%] mx-3" v-on:submit.prevent="login">
-            <div class="grid grid-cols-2">
+        <form class="w-[95%] mx-3 p-3" v-on:submit.prevent="login">
+            <div class="grid grid-cols-2 border">
                 <section>
-                    <p>Photo de profil acctuelle</p>
-                    <img :src="image" width="144" height="144"/>
-
+                    <p class="text-center">Photo de profil actuelle</p>
+                    <div class="flex justify-center">
+                        <img :src="image" width="50%"/>
+                    </div>
                 </section>
-                <section class="border-2 text-center">
+                <section class="border-l-2 text-center">
                     <div class="camera-button">
                         <button type="button" class="button is-rounded" :class="{ 'is-primary' : !isCameraOpen, 'is-danger' : isCameraOpen}" @click="toggleCamera">
                             <span v-if="!isCameraOpen">Open Camera</span>
@@ -175,30 +176,36 @@
                         <video v-show="!isPhotoTaken" ref="camera" autoplay></video>
                         <canvas v-show="isPhotoTaken" id="photoTaken" ref="canvas"></canvas>
                     </div>
-                    <button type="button" class="border-2 rounded-full" @click="takePhoto">
-                        <Icon name="ic:baseline-camera-alt" class="px-4" />
-                    </button>
-                    <div v-if="isPhotoTaken && isCameraOpen" class="camera-download">
-                        <a id="downloadPhoto" download="my-photo.jpg" class="button" role="button" @click="downloadImage">
-                            Télécharger
-                        </a>
-                        <a role="button" @click="saveTakedImage">
-                            Choisir en tant que photo de profil
-                        </a>
+                    <div>
+                        <button  v-if="!isPhotoTaken &&isCameraOpen" type="button" class="border-2 rounded-full p-4" @click="takePhoto">
+                            <Icon name="ic:baseline-camera-alt" class="px-4" />
+                        </button>
+                        <div v-if="isPhotoTaken && isCameraOpen" class="camera-download flex justify-center">
+                            <a id="downloadPhoto" download="my-photo.jpg" class=" block button border-2 rounded-full p-4 m-2" role="button" @click="downloadImage">
+                                <Icon name="ic:baseline-download" class="px-4" />
+                            </a>
+                            <a role="button" @click="saveTakedImage" class="block border-2 rounded-full p-4 m-2">
+                                <Icon name="ic:baseline-add-photo-alternate" class="px-4" />
+                            </a>
+                        </div>
                     </div>
                 </section>
             </div>
-            <div class="flex flex-col">
-                <label>Pseudo</label>
-                <input type="text"  v-model="pseudo" required />
+            <div class="grid grid-cols-2">
+                <div class="flex flex-col">
+                    <label>Pseudo</label>
+                    <input type="text"  v-model="pseudo" required />
+                </div>
+                <div class="flex flex-col" v-if="online">
+                    <label>Room</label>
+                    <select type="text"  v-model="selectedRoom" required >
+                        <option v-for="(room, name) in rooms" :value="name">{{name}}</option>
+                    </select>
+                </div>
             </div>
-            <div class="flex flex-col" v-if="online">
-                <label>Room</label>
-                <select type="text"  v-model="selectedRoom" required >
-                    <option v-for="(room, name) in rooms" :value="name">{{name}}</option>
-                </select>
+            <div class="flex justify-center m-4">
+                <button class="bg-violet-500 p-2 rounded-3xl" type="submit" v-if="online">Se connecter</button>
             </div>
-            <button type="submit" v-if="online">Se connecter</button>
         </form>
     </div>
 </template>

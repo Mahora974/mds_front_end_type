@@ -147,7 +147,7 @@
 
 <template>
     <div>
-        <AppTitle class="text-purple-700" title="Réception"/>
+        <AppTitle title="Réception"/>
         <h2 class="mx-2">Se connecter</h2>
         <form class="w-[95%] mx-3" v-on:submit.prevent="login">
             <div class="grid grid-cols-2">

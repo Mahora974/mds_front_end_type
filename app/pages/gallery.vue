@@ -15,7 +15,7 @@
 
 <template>
     <div>
-        <AppTitle class="text-purple-700" title="Vos photos"/>
+        <AppTitle title="Vos photos"/>
         <section class="m-1 grid gap-1 xl:grid-cols-8 grid-cols-4">
             <div v-for="(image, index) in gallery" > 
                 <img :src="image.image">

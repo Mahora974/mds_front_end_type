@@ -187,7 +187,7 @@
 
 <template>
     <div>
-        <AppTitle class="text-purple-700" :title="title"/>
+        <AppTitle :title="title"/>
         <div id="chat" class="mb-4">
             <div v-for="message in messages" class="grid grid-cols-[1fr_12fr_1fr] gap-2 odd:bg-white even:bg-gray-100">
                 <div class="user flex flex-col">

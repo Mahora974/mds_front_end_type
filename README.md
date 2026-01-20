@@ -1,14 +1,32 @@
-# Application PWA de chat - Projet MDS
+# Application PWA de tchat - Projet MDS
 
 Disponible en production et à l'installation [ici](https://mahora.grolleau.angers.mds-project.fr/).
 
-# Nuxt Minimal Starter
+TP du cours "Développement front-end avancé Type"
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Progressive web app développée en nuxtqui permet de discuter via tchat par socket.
 
-## Setup
+## Prérequis
 
-Make sure to install dependencies:
+- Node: v22.12.0
+- Nuxt: v3.29.3  
+
+## Installation
+
+### 1. Cloner le projet 
+
+Cloner le projet en local.
+
+En HTTPS : 
+```https://github.com/Mahora974/mds_front_end_type.git```
+
+En SSH : 
+```git@github.com:Mahora974/mds_front_end_type.git```
+
+Via le client GitHub : 
+```gh repo clone Mahora974/mds_front_end_type```
+
+### 2. Lancer l'installation
 
 ```bash
 # npm
@@ -24,9 +42,9 @@ yarn install
 bun install
 ```
 
-## Development Server
+## Utilisation
 
-Start the development server on `http://localhost:3000`:
+### Pour lancer en développement : 
 
 ```bash
 # npm
@@ -42,9 +60,8 @@ yarn dev
 bun run dev
 ```
 
-## Production
+### Pour lancer en production : 
 
-Build the application for production:
 
 ```bash
 # npm
@@ -60,7 +77,7 @@ yarn build
 bun run build
 ```
 
-Locally preview production build:
+### Pour prévisualiser la compilation de production en local : 
 
 ```bash
 # npm
@@ -76,4 +93,17 @@ yarn preview
 bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Structuration du code
+
+- 3 Components : 
+  - AppFooter - le footer global 
+  - AppHeader - le menu global
+  - AppTitle - le template de titre de page
+- 4 Pages : 
+  - index - page d'accueil, contient un petit résumé de l'application
+  - reception - page de connexion et de profil de l'utilisateur. Permet de choisir la room à rejoindre
+  - [room] - page de template pour les rooms. Affiche les messages même hors connexion et permet d'envoyer du texte ou des photos
+  - gallery - permet à l'utilisateur de retrouver les images enregistrée
+
+La logique et la vue sont contenue dans les mêmes fichiers.
+  

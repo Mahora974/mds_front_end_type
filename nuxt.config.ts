@@ -8,6 +8,13 @@ export default defineNuxtConfig({
     mode: 'css',
     cssLayer: 'base'
   },
+  vite: {
+    resolve: {
+      alias: {
+        '#types': '/types' 
+      }
+    }
+  },
   pwa: {
     registerType: 'autoUpdate',
     manifest: {

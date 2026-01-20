@@ -1,21 +1,26 @@
 <script setup lang="ts">
-    const gallery = ref(JSON.parse(localStorage.getItem('gallery')));
+    const gallery:Ref<GalleryImage[] | null > = ref(null);
+    const savedGallery = localStorage.getItem('gallery');
+    if (savedGallery) {
+        gallery.value = JSON.parse(savedGallery)
+    }
 
     function downloadImage(index:number, image:string) {
         const download = document.getElementById("download_"+index);
-        download.setAttribute("href", image);
+        download?.setAttribute("href", image);
     }
 
     function deleteImage(index:number) {
-        gallery.value.splice(index,1);
-        localStorage.setItem('gallery', JSON.stringify(gallery.value));
-
+        if (gallery.value) {
+            gallery.value.splice(index,1);
+            localStorage.setItem('gallery', JSON.stringify(gallery.value));
+        }
     }
 </script>
 
 <template>
     <div>
-        <AppTitle class="text-purple-700" title="Vos photos"/>
+        <AppTitle title="Vos photos"/>
         <section class="m-1 grid gap-1 xl:grid-cols-8 grid-cols-4">
             <div v-for="(image, index) in gallery" > 
                 <img :src="image.image">

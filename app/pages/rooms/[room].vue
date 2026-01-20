@@ -1,33 +1,16 @@
 <script setup lang="ts">
-    import { io } from "socket.io-client";
-    import { useBattery, useOnline, useVibrate, useWebNotification, type UseWebNotificationOptions } from '@vueuse/core'
+    /// <reference path="../../../types/index.d.ts" />
+    import { io, Socket } from "socket.io-client";
+    import { useOnline, useVibrate, useWebNotification, type UseWebNotificationOptions } from '@vueuse/core'
+    import type { ShallowRef } from "vue";
+    import type { RouteLocationNormalizedGeneric } from "vue-router";
 
-    class Message {
-        categorie: string;
-        content: string;
-        dateEmis: Date;
-        pseudo: string;
-        roomName: string;
-        serverId: string;
-        id_image: string | undefined;
-        constructor(categorie: string, content: string, dateEmis: Date, pseudo: string, roomName: string, serverId: string,id_image?: string) {
-            this.categorie = categorie;
-            this.content = content;
-            this.dateEmis = dateEmis;
-            this.pseudo = pseudo;
-            this.roomName = roomName;
-            this.serverId = serverId;
-            this.id_image = id_image;
-        }
-        
-    }
-
-    const online = useOnline()
-    const isCameraOpen = ref(false)
-    const isPhotoTaken = ref(false); 
-    const camera = ref(null)
-    const canvas = ref(null)
-    const socket = io('https://api.tools.gavago.fr', {  
+    const online: Readonly<ShallowRef<boolean>> = useOnline()
+    const isCameraOpen: Ref<boolean> = ref(false)
+    const isPhotoTaken: Ref<boolean> = ref(false); 
+    const camera: Ref<null> = ref(null)
+    const canvas: Ref<null> = ref(null)
+    const socket:Socket = io('https://api.tools.gavago.fr', {  
         transports: ["websocket"],
     });
     const options: UseWebNotificationOptions = {
@@ -39,25 +22,27 @@
     }
 
     const {show,ensurePermissions} = useWebNotification(options)
-    const { vibrate, isSupported } = useVibrate({ pattern: [300, 100, 300] })
-    const notify = async () => {
+    const { vibrate } = useVibrate({ pattern: [300, 100, 300] })
+    const notify: () => Promise<void> = async () => {
         if (await ensurePermissions())
         show()
-    vibrate
+        vibrate()
     }
 
 
-    const route = useRoute()
-    const room = ref(route.params.room)
-    if (room.value !== localStorage.getItem('room')) {
-        room.value = localStorage.getItem('room');
+    const route:RouteLocationNormalizedGeneric = useRoute()
+    const room: Ref = ref(route.params.room)
+    const savedRoom: string|null = localStorage.getItem('room')
+    if (savedRoom && room.value !== savedRoom) {
+        room.value = savedRoom;
     }
-    const pseudo = ref(localStorage.getItem('pseudo'))
-    const title = `Bienvenue dans la room "${room.value}", ${pseudo.value} !`;
+    const pseudo:Ref<string | null> = ref(localStorage.getItem('pseudo'))
+    const title:string  = `Bienvenue dans la room "${room.value}", ${pseudo.value} !`;
     const messages:Ref<Message[]> = ref([]);
-    const typedMessage = ref('');
-    if (!online.value) {
-        messages.value = JSON.parse(localStorage.getItem(`log-message-${room.value}`));
+    const typedMessage:Ref<string> = ref('');
+    const logs: string|null = localStorage.getItem(`log-message-${room.value}`)
+    if (!online.value && logs) {
+        messages.value = JSON.parse(logs);
     }
     
     socket.on("connect", () => {
@@ -72,6 +57,7 @@
         alert(`Erreur du serveur: ${msg}.`);
     });
 
+    // Reception of a new message or image
     socket.on("chat-msg", async (msg: Message) => {
         msg.dateEmis = new Date(msg.dateEmis);
         messages.value.push(msg);
@@ -90,6 +76,7 @@
         }
     });
 
+    // Send message
     function send() {
         socket.emit("chat-msg", {
             content: typedMessage.value,
@@ -99,15 +86,8 @@
     }
 
         let tracks:MediaStreamTrack[] = [];
-    const constraints = (window.constraints = {
-        audio: false,
-        video: {
-            facingMode: {
-                exact: "environment"
-            }
-        }
-    });
 
+    // Open Camera 
     function createCameraElement() {
         const constraints = (window.constraints = {
             audio: false,
@@ -124,6 +104,7 @@
         });
     }
 
+    // CLose Camera
     function stopCameraStream(tracks:MediaStreamTrack[]) {
         tracks.forEach(track => track.stop())
         
@@ -147,20 +128,28 @@
 
     function downloadImage() {
         const download = document.getElementById("downloadPhoto");
-        const canvas = document.getElementById("photoTaken").toDataURL("image/jpeg")
-            .replace("image/jpeg", "image/octet-stream");
-        if (download) {
-            download.setAttribute("href", canvas);
-        }
-        saveImage(canvas);
-    }
-
-    function saveTakedImage() {
-        const canvas:string = document.getElementById("photoTaken").toDataURL("image/jpeg")
+        const photoTaken: HTMLCanvasElement|null = document.getElementById("photoTaken");
+        if (photoTaken) {
+            const canvas = photoTaken.toDataURL("image/jpeg")
                 .replace("image/jpeg", "image/octet-stream");
-        saveImage(canvas);
+            if (download) {
+                download.setAttribute("href", canvas);
+            }
+            saveImage(canvas);
+        }
     }
 
+    // Choose as profile picture
+    function saveTakedImage() {
+        const photoTaken: HTMLCanvasElement|null = document.getElementById("photoTaken");
+        if (photoTaken) {
+            const canvas:string = photoTaken.toDataURL("image/jpeg")
+                    .replace("image/jpeg", "image/octet-stream");
+            saveImage(canvas);
+        }
+    }
+
+    // Save Image in the galley
     function saveImage(image:string) {
         let gallery = localStorage.getItem('gallery');
         if (gallery){
@@ -169,25 +158,27 @@
             localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
         }
         notify()
-        vibrate()
     }
 
     async function sendPicture() {
-        const photoData:string = document.getElementById("photoTaken").toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
-        const res = await fetch(`https://api.tools.gavago.fr/socketio/api/images/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id: socket.id, image_data: photoData })
-        })
+        const photoTaken: HTMLCanvasElement|null = document.getElementById("photoTaken");
+        if (photoTaken) {
+            const photoData:string = photoTaken.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
+            await fetch(`https://api.tools.gavago.fr/socketio/api/images/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: socket.id, image_data: photoData })
+            })
+        }
     }
 
 </script>
 
 <template>
     <div>
-        <AppTitle class="text-purple-700" :title="title"/>
+        <AppTitle :title="title"/>
         <div id="chat" class="mb-4">
             <div v-for="message in messages" class="grid grid-cols-[1fr_12fr_1fr] gap-2 odd:bg-white even:bg-gray-100">
                 <div class="user flex flex-col">

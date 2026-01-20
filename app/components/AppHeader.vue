@@ -1,13 +1,16 @@
 <script setup lang="ts">
+  /// <reference path="../../types/index.d.ts" />
+
   import { useBattery, useOnline } from '@vueuse/core'
   import { useGeolocation } from '@vueuse/core'
+  import type { ShallowRef } from 'vue'
 
-  const online = useOnline()
-  const room = ref(import.meta.client?localStorage.getItem('room'):null)
-  const { charging, chargingTime, dischargingTime, level } = useBattery()
-  const batteryIcon = ref('');
-  const { coords, locatedAt, error, resume, pause } = useGeolocation()
-  const address = ref('')
+  const online:  Readonly<ShallowRef<boolean>> = useOnline()
+  const room: Ref<string | null, string | null> = ref(import.meta.client?localStorage.getItem('room'):null)
+  const { charging, level } = useBattery()
+  const batteryIcon: Ref<string, string> = ref('');
+  const { coords } = useGeolocation()
+  const address: Ref<string, string> = ref('')
 
   function determineBatteryIcon(level:number, charging:boolean){
     let battery = level*100;
@@ -21,15 +24,10 @@
     }
   }
 
-  async function determineCity(coords: {readonly accuracy: number; readonly altitude: number | null; readonly altitudeAccuracy: number | null;
-    readonly heading: number | null;
-    readonly latitude: number;
-    readonly longitude: number;
-    readonly speed: number | null;
-}){
+  async function determineCity(coords: Coord){
     const {longitude, latitude} = coords
-    const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyB28h3dTAeiwgMFAOFQoexmB9obhpmeBoE`);
-    const response = await res.json();
+    const res: Response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyB28h3dTAeiwgMFAOFQoexmB9obhpmeBoE`);
+    const response: Geolocalisation= await res.json();
     return `${response.results[0].address_components[2].long_name}, ${response.results[0].address_components[5].long_name}`
   }
 

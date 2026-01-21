@@ -1,9 +1,12 @@
 <script setup lang="ts">
     const gallery:Ref<GalleryImage[] | null > = ref(null);
-    const savedGallery = localStorage.getItem('gallery');
-    if (savedGallery) {
-        gallery.value = JSON.parse(savedGallery)
-    }
+
+    onMounted(()=>{
+        const savedGallery = localStorage.getItem('gallery');
+        if (savedGallery) {
+            gallery.value = JSON.parse(savedGallery)
+        }
+    })
 
     function downloadImage(index:number, image:string) {
         const download = document.getElementById("download_"+index);

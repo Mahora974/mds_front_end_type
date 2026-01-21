@@ -4,13 +4,13 @@
     import { useOnline } from '@vueuse/core'
     import type { ShallowRef } from 'vue'
 
-    const online: Readonly<ShallowRef<boolean>> = useOnline()
+    let online: Readonly<ShallowRef<boolean>>
     const isCameraOpen: Ref<boolean> = ref(false)
     const isPhotoTaken: Ref<boolean> = ref(false); 
     const camera = ref(null)
     const canvas = ref(null)
-    const pseudo: Ref<string|null> = ref(localStorage.getItem('pseudo'))
-    const image: Ref<string|null> =  ref(localStorage.getItem('image'))
+    const pseudo: Ref<string|null> = ref(null)
+    const image: Ref<string|null> =  ref(null)
 
     // Get rooms
     const selectedRoom =  ref('')
@@ -47,58 +47,64 @@
         'L\'Éplorée': {clients: {}},
         'Et ils vécurent heureux': {clients: {}},
     }
-
-    const options: UseWebNotificationOptions = {
-        title: 'Votre image a été enregistrée dans la galerie ! ',
-        dir: 'auto',
-        lang: 'fr',
-        renotify: true,
-        tag: 'test',
-    }
-
-    const { show } = useWebNotification(options)
-    const { vibrate } = useVibrate({ pattern: [300, 100, 300] })
     
-    let tracks:MediaStreamTrack[] = [];
-    const constraints = (window.constraints = {
-        audio: false,
-        video: {
-            facingMode: {
-                exact: "environment"
+    let showNotification: () => void
+    let vibrating: () => void
+    let toggleCamera: () => void
+
+    onMounted(()=>{
+        online = useOnline()
+        pseudo.value = localStorage.getItem('pseudo')
+        image.value =  localStorage.getItem('image')
+        
+
+        const options: UseWebNotificationOptions = {
+            title: 'Votre image a été enregistrée dans la galerie ! ',
+            dir: 'auto',
+            lang: 'fr',
+            renotify: true,
+            tag: 'test',
+        }
+
+        const { show } = useWebNotification(options)
+        const { vibrate } = useVibrate({ pattern: [300, 100, 300] })
+        showNotification = show
+        vibrating = vibrate
+
+        let tracks:MediaStreamTrack[] = [];
+
+        function createCameraElement() {
+            const constraints = (window.constraints = {
+                audio: false,
+                video: true
+            });
+            navigator.mediaDevices
+                .getUserMedia(constraints)
+                .then(stream => {
+                    camera.value.srcObject = stream;
+                    tracks.push(...camera.value.srcObject.getTracks());
+                })
+                .catch(error => {
+                alert("May the browser didn't support or there is some errors.");
+            });
+        }
+
+        function stopCameraStream(tracks:MediaStreamTrack[]) {
+            tracks.forEach(track => track.stop())
+            
+        }
+
+        toggleCamera = () => {
+            isCameraOpen.value = !isCameraOpen.value
+            if(isCameraOpen.value) {
+                createCameraElement();
+                isPhotoTaken.value = false;
+            } else {
+                stopCameraStream(tracks)
             }
         }
-    });
+    })
 
-    function createCameraElement() {
-        const constraints = (window.constraints = {
-            audio: false,
-            video: true
-        });
-        navigator.mediaDevices
-            .getUserMedia(constraints)
-            .then(stream => {
-                camera.value.srcObject = stream;
-                tracks.push(...camera.value.srcObject.getTracks());
-            })
-            .catch(error => {
-            alert("May the browser didn't support or there is some errors.");
-        });
-    }
-
-    function stopCameraStream(tracks:MediaStreamTrack[]) {
-        tracks.forEach(track => track.stop())
-        
-    }
-
-    function toggleCamera() {
-        isCameraOpen.value = !isCameraOpen.value
-        if(isCameraOpen.value) {
-            createCameraElement();
-        } else {
-            isPhotoTaken.value = false;
-            stopCameraStream(tracks)
-        }
-    }
 
     function takePhoto() {
         isPhotoTaken.value = !isPhotoTaken.value;
@@ -108,7 +114,7 @@
 
     function downloadImage() {
         const download:HTMLElement|null = document.getElementById("downloadPhoto");
-        const photoTaken:HTMLCanvasElement|null = document.getElementById("photoTaken")
+        const photoTaken:HTMLCanvasElement|null = canvas.value
         if (photoTaken) {
             const canvas = photoTaken.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
             if (download) download.setAttribute("href", canvas);
@@ -117,7 +123,7 @@
     }
 
     function saveTakedImage() {
-        const photoTaken:HTMLCanvasElement = document.getElementById("photoTaken")
+        const photoTaken:HTMLCanvasElement|null = canvas.value
         console.log(photoTaken)
         if (photoTaken){
             const canvas:string = photoTaken.toDataURL("image/jpeg")
@@ -133,8 +139,8 @@
         if (gallery) parsedGallery = JSON.parse(gallery)
         parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
         localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
-        show()
-        vibrate()
+        showNotification()
+        vibrating()
     }
 
     watch(pseudo, async (newPseudo) => {
@@ -157,14 +163,15 @@
     <div>
         <AppTitle title="Réception"/>
         <h2 class="mx-2">Se connecter</h2>
-        <form class="w-[95%] mx-3" v-on:submit.prevent="login">
-            <div class="grid grid-cols-2">
+        <form class="w-[95%] mx-3 p-3" v-on:submit.prevent="login">
+            <div class="grid grid-cols-2 border">
                 <section>
-                    <p>Photo de profil acctuelle</p>
-                    <img :src="image" width="144" height="144"/>
-
+                    <p class="text-center">Photo de profil actuelle</p>
+                    <div class="flex justify-center">
+                        <img :src="image" width="50%"/>
+                    </div>
                 </section>
-                <section class="border-2 text-center">
+                <section class="border-l-2 text-center">
                     <div class="camera-button">
                         <button type="button" class="button is-rounded" :class="{ 'is-primary' : !isCameraOpen, 'is-danger' : isCameraOpen}" @click="toggleCamera">
                             <span v-if="!isCameraOpen">Open Camera</span>
@@ -175,30 +182,36 @@
                         <video v-show="!isPhotoTaken" ref="camera" autoplay></video>
                         <canvas v-show="isPhotoTaken" id="photoTaken" ref="canvas"></canvas>
                     </div>
-                    <button type="button" class="border-2 rounded-full" @click="takePhoto">
-                        <Icon name="ic:baseline-camera-alt" class="px-4" />
-                    </button>
-                    <div v-if="isPhotoTaken && isCameraOpen" class="camera-download">
-                        <a id="downloadPhoto" download="my-photo.jpg" class="button" role="button" @click="downloadImage">
-                            Télécharger
-                        </a>
-                        <a role="button" @click="saveTakedImage">
-                            Choisir en tant que photo de profil
-                        </a>
+                    <div>
+                        <button  v-if="!isPhotoTaken &&isCameraOpen" type="button" class="border-2 rounded-full p-4" @click="takePhoto">
+                            <Icon name="ic:baseline-camera-alt" class="px-4" />
+                        </button>
+                        <div v-if="isPhotoTaken && isCameraOpen" class="camera-download flex justify-center">
+                            <a id="downloadPhoto" download="my-photo.jpg" class=" block button border-2 rounded-full p-4 m-2" role="button" @click="downloadImage">
+                                <Icon name="ic:baseline-download" class="px-4" />
+                            </a>
+                            <a role="button" @click="saveTakedImage" class="block border-2 rounded-full p-4 m-2">
+                                <Icon name="ic:baseline-add-photo-alternate" class="px-4" />
+                            </a>
+                        </div>
                     </div>
                 </section>
             </div>
-            <div class="flex flex-col">
-                <label>Pseudo</label>
-                <input type="text"  v-model="pseudo" required />
+            <div class="grid grid-cols-2">
+                <div class="flex flex-col">
+                    <label>Pseudo</label>
+                    <input type="text"  v-model="pseudo" required />
+                </div>
+                <div class="flex flex-col" v-if="online">
+                    <label>Room</label>
+                    <select type="text"  v-model="selectedRoom" required >
+                        <option v-for="(room, name) in rooms" :value="name">{{name}}</option>
+                    </select>
+                </div>
             </div>
-            <div class="flex flex-col" v-if="online">
-                <label>Room</label>
-                <select type="text"  v-model="selectedRoom" required >
-                    <option v-for="(room, name) in rooms" :value="name">{{name}}</option>
-                </select>
+            <div class="flex justify-center m-4">
+                <button class="bg-violet-500 p-2 rounded-3xl" type="submit" v-if="online">Se connecter</button>
             </div>
-            <button type="submit" v-if="online">Se connecter</button>
         </form>
     </div>
 </template>

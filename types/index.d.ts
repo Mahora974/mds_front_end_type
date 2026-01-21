@@ -84,14 +84,4 @@ declare global {
             this.saved_at = saved_at
         }
     }
-
-    function toggleCamera() {
-        isCameraOpen.value = !isCameraOpen.value
-        if(isCameraOpen.value) {
-            createCameraElement();
-        } else {
-            isPhotoTaken.value = false;
-            stopCameraStream(tracks)
-        }
-    }
 }

@@ -19,4 +19,4 @@ jobs:
                 git pull
                 npm i
                 npm run build
-                pm2 restart nuxt-app
+                npx serve .output/public 

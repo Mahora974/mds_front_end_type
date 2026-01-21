@@ -19,10 +19,10 @@ export default defineNuxtConfig({
     preset: 'static'
   },
   routeRules: {
-    '/': { isr: true },
+    '/': { isr: false },
     '/rooms/**': { prerender: false },
-    '/gallery': { isr: true },
-    '/reception':{ isr: true },
+    '/gallery': { isr: false },
+    '/reception':{ isr: false },
   },
   pwa: {
     registerType: 'autoUpdate',

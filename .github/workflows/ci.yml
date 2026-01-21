@@ -18,6 +18,6 @@ jobs:
                 cd /var/mds_front_end_type
                 git pull
                 npm i
-                npm run buil
+                npm run build
                 pm2 restart nuxt-app
 

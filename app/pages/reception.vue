@@ -4,13 +4,13 @@
     import { useOnline } from '@vueuse/core'
     import type { ShallowRef } from 'vue'
 
-    const online: Readonly<ShallowRef<boolean>> = useOnline()
+    let online: Readonly<ShallowRef<boolean>>
     const isCameraOpen: Ref<boolean> = ref(false)
     const isPhotoTaken: Ref<boolean> = ref(false); 
     const camera = ref(null)
     const canvas = ref(null)
-    const pseudo: Ref<string|null> = ref(localStorage.getItem('pseudo'))
-    const image: Ref<string|null> =  ref(localStorage.getItem('image'))
+    const pseudo: Ref<string|null> = ref(null)
+    const image: Ref<string|null> =  ref(null)
 
     // Get rooms
     const selectedRoom =  ref('')
@@ -47,58 +47,64 @@
         'L\'Éplorée': {clients: {}},
         'Et ils vécurent heureux': {clients: {}},
     }
-
-    const options: UseWebNotificationOptions = {
-        title: 'Votre image a été enregistrée dans la galerie ! ',
-        dir: 'auto',
-        lang: 'fr',
-        renotify: true,
-        tag: 'test',
-    }
-
-    const { show } = useWebNotification(options)
-    const { vibrate } = useVibrate({ pattern: [300, 100, 300] })
     
-    let tracks:MediaStreamTrack[] = [];
-    const constraints = (window.constraints = {
-        audio: false,
-        video: {
-            facingMode: {
-                exact: "environment"
+    let showNotification: () => void
+    let vibrating: () => void
+    let toggleCamera: () => void
+
+    onMounted(()=>{
+        online = useOnline()
+        pseudo.value = localStorage.getItem('pseudo')
+        image.value =  localStorage.getItem('image')
+        
+
+        const options: UseWebNotificationOptions = {
+            title: 'Votre image a été enregistrée dans la galerie ! ',
+            dir: 'auto',
+            lang: 'fr',
+            renotify: true,
+            tag: 'test',
+        }
+
+        const { show } = useWebNotification(options)
+        const { vibrate } = useVibrate({ pattern: [300, 100, 300] })
+        showNotification = show
+        vibrating = vibrate
+
+        let tracks:MediaStreamTrack[] = [];
+
+        function createCameraElement() {
+            const constraints = (window.constraints = {
+                audio: false,
+                video: true
+            });
+            navigator.mediaDevices
+                .getUserMedia(constraints)
+                .then(stream => {
+                    camera.value.srcObject = stream;
+                    tracks.push(...camera.value.srcObject.getTracks());
+                })
+                .catch(error => {
+                alert("May the browser didn't support or there is some errors.");
+            });
+        }
+
+        function stopCameraStream(tracks:MediaStreamTrack[]) {
+            tracks.forEach(track => track.stop())
+            
+        }
+
+        toggleCamera = () => {
+            isCameraOpen.value = !isCameraOpen.value
+            if(isCameraOpen.value) {
+                createCameraElement();
+                isPhotoTaken.value = false;
+            } else {
+                stopCameraStream(tracks)
             }
         }
-    });
+    })
 
-    function createCameraElement() {
-        const constraints = (window.constraints = {
-            audio: false,
-            video: true
-        });
-        navigator.mediaDevices
-            .getUserMedia(constraints)
-            .then(stream => {
-                camera.value.srcObject = stream;
-                tracks.push(...camera.value.srcObject.getTracks());
-            })
-            .catch(error => {
-            alert("May the browser didn't support or there is some errors.");
-        });
-    }
-
-    function stopCameraStream(tracks:MediaStreamTrack[]) {
-        tracks.forEach(track => track.stop())
-        
-    }
-
-    function toggleCamera() {
-        isCameraOpen.value = !isCameraOpen.value
-        if(isCameraOpen.value) {
-            createCameraElement();
-            isPhotoTaken.value = false;
-        } else {
-            stopCameraStream(tracks)
-        }
-    }
 
     function takePhoto() {
         isPhotoTaken.value = !isPhotoTaken.value;
@@ -108,7 +114,7 @@
 
     function downloadImage() {
         const download:HTMLElement|null = document.getElementById("downloadPhoto");
-        const photoTaken:HTMLCanvasElement|null = document.getElementById("photoTaken")
+        const photoTaken:HTMLCanvasElement|null = canvas.value
         if (photoTaken) {
             const canvas = photoTaken.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
             if (download) download.setAttribute("href", canvas);
@@ -117,7 +123,7 @@
     }
 
     function saveTakedImage() {
-        const photoTaken:HTMLCanvasElement = document.getElementById("photoTaken")
+        const photoTaken:HTMLCanvasElement|null = canvas.value
         console.log(photoTaken)
         if (photoTaken){
             const canvas:string = photoTaken.toDataURL("image/jpeg")
@@ -133,8 +139,8 @@
         if (gallery) parsedGallery = JSON.parse(gallery)
         parsedGallery.push({"image":image, "saved_at": new Date().toLocaleString()});
         localStorage.setItem('gallery',JSON.stringify(parsedGallery)); 
-        show()
-        vibrate()
+        showNotification()
+        vibrating()
     }
 
     watch(pseudo, async (newPseudo) => {

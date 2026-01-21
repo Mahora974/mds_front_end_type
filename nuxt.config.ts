@@ -15,6 +15,15 @@ export default defineNuxtConfig({
       }
     }
   },
+  nitro: {
+    preset: 'static'
+  },
+  routeRules: {
+    '/': { isr: true },
+    '/rooms/**': { prerender: false },
+    '/gallery': { isr: true },
+    '/reception':{ isr: true },
+  },
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
